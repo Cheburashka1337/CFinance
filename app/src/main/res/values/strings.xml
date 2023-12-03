@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">CFinance</string>
+
+    <string-array name="theValute">
+        <item>RUB</item>
+        <item>EUR</item>
+        <item>KZT</item>
+        <item>USD</item>
+        <item>BYN</item>
+        <!--<item>EUR</item> -->
+    </string-array>
+
+</resources>

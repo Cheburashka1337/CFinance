@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    tools:context=".MainActivity">
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fontFamily="casual"
+        android:text="@string/app_name"
+        android:layout_marginTop="5sp"
+        android:textAlignment="center"
+        android:textSize="30sp" />
+
+    <LinearLayout
+        android:id="@+id/line_text_input"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/textView"
+        android:layout_marginHorizontal="50sp"
+        android:orientation="horizontal">
+
+
+        <EditText
+            android:id="@+id/edit_name"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:ems="10"
+            android:inputType="textPersonName"
+            android:backgroundTint="@color/purple_700"
+            android:hint="Название"
+            android:textAlignment="center"
+            android:textSize="16sp" />
+
+        <EditText
+            android:id="@+id/edit_price"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1.3"
+            android:ems="10"
+            android:backgroundTint="@color/purple_700"
+            android:inputType="numberDecimal"
+            android:hint="Цена"
+            android:textAlignment="center"
+            android:textSize="16sp" />
+
+        <Spinner
+            android:id="@+id/svaluta"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1.4"
+            android:background="@color/white"
+            android:backgroundTint="@color/white"
+            android:dropDownWidth="wrap_content"
+            android:entries="@array/theValute" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/line_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/line_text_input"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/del_button"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+
+            android:layout_marginLeft="50sp"
+            android:layout_weight="0.5"
+            android:text="-" />
+
+        <EditText
+            android:id="@+id/edit_count"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:backgroundTint="@color/bledn"
+            android:ems="10"
+            android:hint="Количество"
+            android:layout_marginHorizontal="6sp"
+            android:inputType="numberDecimal"
+            android:textAlignment="center"
+            android:textSize="16sp" />
+
+        <Button
+            android:id="@+id/add_button"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginRight="50sp"
+            android:layout_weight="0.5"
+            android:layout_toRightOf="@+id/del_button"
+            android:text="+" />
+
+    </LinearLayout>
+
+
+    <ListView
+        android:id="@+id/listView"
+        android:layout_width="wrap_content"
+        android:layout_height="450sp"
+        android:layout_below="@id/line_button"
+        android:layout_marginTop="2dp"
+        android:layout_marginBottom="0sp"
+        >
+    </ListView>
+
+
+
+    <LinearLayout
+        android:id="@+id/аline_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/listView"
+        android:layout_marginHorizontal="50sp"
+        android:orientation="horizontal">
+
+
+        <EditText
+            android:id="@+id/result"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:backgroundTint="@color/white"
+            android:ems="10"
+            android:hint="Сумма"
+            android:textColorHint="@color/black"
+            android:inputType="textPersonName"
+            android:cursorVisible="false"
+            android:editable="false"
+            android:textAlignment="textEnd" />
+
+        <Spinner
+            android:id="@+id/svaluta2"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="3"
+            android:background="@color/white"
+            android:backgroundTint="@color/white"
+            android:dropDownWidth="wrap_content"
+            android:entries="@array/theValute" />
+
+
+
+
+    </LinearLayout>
+
+</RelativeLayout>
