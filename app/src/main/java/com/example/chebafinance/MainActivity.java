@@ -20,12 +20,9 @@ import android.widget.SimpleAdapter;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import androidx.appcompat.app.AppCompatActivity;
-
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -40,9 +37,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import javax.net.ssl.HttpsURLConnection;
-
 
 
 public class MainActivity extends AppCompatActivity {
@@ -54,12 +49,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-
     //private Spinner svaluta;
     private Set<Currency> mAvailableCurrenciesSet;
     private List<Currency> mAvailableCurrenciesList;
     //private ArrayAdapter<Currency> mAdapter;
-
 
 
     @Override
@@ -319,16 +312,11 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-
-
     private class GetURLData extends AsyncTask<String, String, String> {
-
         private Context context; // Добавьте поле для хранения контекста
-
         public GetURLData(Context context) {
             this.context = context;
         }
-
         protected void onPreExecute(){
             super.onPreExecute();
             Toast.makeText(MainActivity.this,"запрос данных", Toast.LENGTH_SHORT).show();
@@ -375,13 +363,11 @@ public class MainActivity extends AppCompatActivity {
             super.onPostExecute(result);
             } catch(Exception e){}
 
-            if (isNetworkAvailable()) {
-                // Интернет соединение есть, обрабатываем результат
-                Toast.makeText(MainActivity.this, result, Toast.LENGTH_SHORT).show();
-            } else {
-                // Интернет соединение отсутствует, выполните соответствующие действия
-                Toast.makeText(MainActivity.this, "Отсутствует подключение к интернету", Toast.LENGTH_SHORT).show();
-            }
+            //if (isNetworkAvailable()) { //тест проверки интернета // Интернет соединение есть, обрабатываем результат
+                //Toast.makeText(MainActivity.this, result, Toast.LENGTH_SHORT).show();
+            //} else { // Интернет соединение отсутствует, выполните соответствующие действия
+                // Toast.makeText(MainActivity.this, "Отсутствует подключение к интернету", Toast.LENGTH_SHORT).show();
+            //}
 
             try{
 
@@ -429,8 +415,6 @@ public class MainActivity extends AppCompatActivity {
 
                 SharedPreferences valu = getSharedPreferences("valu", Context.MODE_PRIVATE);
                 SharedPreferences.Editor editor_valu = valu.edit();
-
-
                 editor_valu.clear(); // Очищаем все предыдущие значения
                 for (int i = 1; i <= global.valuts.size()-1; i++) {
                     editor_valu.putString(global.valuts.get(i), Double.toString(global.valuts_price.get(i)));
@@ -442,20 +426,13 @@ public class MainActivity extends AppCompatActivity {
                 } else if (result == null && isNetworkAvailable()==false) {
                     try{
                         SharedPreferences valu = getSharedPreferences("valu", Context.MODE_PRIVATE);
-                        //SharedPreferences.Editor editor_valu = valu.edit();
-
-
-
                         Map<String, ?> allEntries = valu.getAll();
                         if (allEntries.isEmpty()) {
                             Log.d("SharedPreferences", "No entries found");
                         }
                         Set<String> keys = allEntries.keySet();
                         for (String key : keys) {
-                            // Ваши действия с каждым ключом
-                            //Log.d("SharedPreferences", "Key: " + key + ", Value: " + allEntries.get(key));
-                            global.valuts.add(key);
-                            Toast.makeText(MainActivity.this,"Загружаем ключ "+key, Toast.LENGTH_SHORT).show();
+                            global.valuts.add(key); // Toast.makeText(MainActivity.this,"Загружаем ключ "+key, Toast.LENGTH_SHORT).show();
                         }
                         for (int i = 1; i <= global.valuts.size()-1; i++) {
                             global.valuts_price.add(Double.parseDouble(valu.getString(global.valuts.get(i),"1")));
@@ -464,14 +441,11 @@ public class MainActivity extends AppCompatActivity {
                         // Получаем ссылку на Spinner из макета
                         Spinner spinner = ((Activity) context).findViewById(R.id.svaluta); // Замените на ваш реальный идентификатор
                         Spinner spinner2 = ((Activity) context).findViewById(R.id.svaluta2);
-
                         // Создаем ArrayAdapter и устанавливаем его в Spinner
                         ArrayAdapter<String> adapter = new ArrayAdapter<>(context, android.R.layout.simple_spinner_item, global.valuts);
                         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
                         spinner.setAdapter(adapter);
                         spinner2.setAdapter(adapter);
-
-
 
                     }catch (Exception e) {
 
@@ -483,98 +457,11 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(MainActivity.this,"Ошибка загрузки данных", Toast.LENGTH_SHORT).show();
             }
 
-            /*
-            if (result == null && 1 == 2) {
-                try{
-                    SharedPreferences valu = getSharedPreferences("valu", Context.MODE_PRIVATE);
-                    //SharedPreferences.Editor editor_valu = valu.edit();
-
-                    Map<String, ?> allEntries = valu.getAll();
-                    Set<String> keys = allEntries.keySet();
-                    for (String key : keys) {
-                        // Ваши действия с каждым ключом
-                        //Log.d("SharedPreferences", "Key: " + key + ", Value: " + allEntries.get(key));
-                        global.valuts.add(key);
-                    }
-                    for (int i = 1; i <= global.valuts.size()-1; i++) {
-                        global.valuts_price.add(Double.parseDouble(valu.getString(global.valuts.get(i),"1")));
-                    }
-
-                    // Получаем ссылку на Spinner из макета
-                    Spinner spinner = ((Activity) context).findViewById(R.id.svaluta); // Замените на ваш реальный идентификатор
-                    Spinner spinner2 = ((Activity) context).findViewById(R.id.svaluta2);
-
-                    // Создаем ArrayAdapter и устанавливаем его в Spinner
-                    ArrayAdapter<String> adapter = new ArrayAdapter<>(context, android.R.layout.simple_spinner_item, global.valuts);
-                    adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                    spinner.setAdapter(adapter);
-                    spinner2.setAdapter(adapter);
-
-
-
-                }catch (Exception e) {
-
-                }
-
-            }*/
         }
         private boolean isNetworkAvailable() {
             ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
             NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
             return activeNetwork != null && activeNetwork.isConnectedOrConnecting();
         }
-
     }
-
-
-
-
-//    public void refreshList(){
-//        data.clear();
-//        HashMap<String, Object> map;
-//        for (int i = 0; i < names.size(); i++) {
-//            map = new HashMap<>();
-//            map.put("Name", names.get(i));
-//            map.put("Price", price.get(i) +" x "+ count.get(i) +" = "+ price.get(i) * count.get(i) +"  "+ valuta.get(i));
-//            data.add(map);
-//        }
-//        adapter.notifyDataSetChanged();
-//    }
-
-
 }
-
-/*
-data.clear();
-                adapter.notifyDataSetChanged();
-                HashMap<String, Object> map2;
-                for (int i = 0; i < names.size(); i++) {
-                    map2 = new HashMap<>();
-                    map2.put("Name", names.get(i));
-                    map2.put("Price", price.get(i) +" x "+ count.get(i) +" = "+ price.get(i) * count.get(i) +"  "+ valuta.get(i));
-                    data.add(map2);
-                }
-
-
-
-ListView listView = findViewById(R.id.listView);
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
-                android.R.layout.simple_list_item_1, names);
-
-
-
-private ListView list;
-
-
-list();
-
-private void list() {
-        list = (ListView)findViewById(R.id.listView);
-        ArrayAdapter <String> adapter = new ArrayAdapter<String>(this, R.layout.names, names);
-        list.setAdapter(adapter);
-    }
-
-
-* */
-
-
