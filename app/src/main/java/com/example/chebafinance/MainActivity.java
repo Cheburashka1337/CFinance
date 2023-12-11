@@ -3,9 +3,12 @@ package com.example.chebafinance;
 import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.InputType;
+import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
@@ -35,9 +38,12 @@ import java.util.Formatter;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.net.ssl.HttpsURLConnection;
+
+
 
 public class MainActivity extends AppCompatActivity {
 
@@ -369,9 +375,17 @@ public class MainActivity extends AppCompatActivity {
             super.onPostExecute(result);
             } catch(Exception e){}
 
+            if (isNetworkAvailable()) {
+                // Интернет соединение есть, обрабатываем результат
+                Toast.makeText(MainActivity.this, result, Toast.LENGTH_SHORT).show();
+            } else {
+                // Интернет соединение отсутствует, выполните соответствующие действия
+                Toast.makeText(MainActivity.this, "Отсутствует подключение к интернету", Toast.LENGTH_SHORT).show();
+            }
+
             try{
 
-                if (result != null) {
+                if (result != null && isNetworkAvailable()==true) {
 
                 JSONObject jsonObject2 = new JSONObject(result);
                 JSONObject valuteObject = jsonObject2.getJSONObject("Valute");
@@ -399,18 +413,12 @@ public class MainActivity extends AppCompatActivity {
             } catch(Exception e){}
 
 
-
-
-
-
-
             try {
 
-                if (result != null) {
+                if (result != null && isNetworkAvailable()==true) {
 
                 JSONObject jsonObject = new JSONObject(result); //String test = ""+jsonObject.getJSONObject("Valute"); //.getString("EUR") .getJSONObject("AZN").getDouble("Value")
                 JSONObject subObj = jsonObject.getJSONObject("Valute");
-
                 JSONObject subObj2; // сохранение данных по нашим валютам
                 for (int i = 1; i <= global.valuts.size()-1; i++){
                     subObj2 = subObj.getJSONObject(global.valuts.get(i));
@@ -419,26 +427,103 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(MainActivity.this,"Данные по валютному курсу были загружены", Toast.LENGTH_SHORT).show();
 
 
-
-
                 SharedPreferences valu = getSharedPreferences("valu", Context.MODE_PRIVATE);
                 SharedPreferences.Editor editor_valu = valu.edit();
 
+
+                editor_valu.clear(); // Очищаем все предыдущие значения
                 for (int i = 1; i <= global.valuts.size()-1; i++) {
                     editor_valu.putString(global.valuts.get(i), Double.toString(global.valuts_price.get(i)));
                 }
+                editor_valu.apply(); // А это сохранение без него работать ничего не будет
+                Toast.makeText(MainActivity.this,"Данные по валютному курсу сохранены", Toast.LENGTH_SHORT).show();
+
+
+                } else if (result == null && isNetworkAvailable()==false) {
+                    try{
+                        SharedPreferences valu = getSharedPreferences("valu", Context.MODE_PRIVATE);
+                        //SharedPreferences.Editor editor_valu = valu.edit();
 
 
 
+                        Map<String, ?> allEntries = valu.getAll();
+                        if (allEntries.isEmpty()) {
+                            Log.d("SharedPreferences", "No entries found");
+                        }
+                        Set<String> keys = allEntries.keySet();
+                        for (String key : keys) {
+                            // Ваши действия с каждым ключом
+                            //Log.d("SharedPreferences", "Key: " + key + ", Value: " + allEntries.get(key));
+                            global.valuts.add(key);
+                            Toast.makeText(MainActivity.this,"Загружаем ключ "+key, Toast.LENGTH_SHORT).show();
+                        }
+                        for (int i = 1; i <= global.valuts.size()-1; i++) {
+                            global.valuts_price.add(Double.parseDouble(valu.getString(global.valuts.get(i),"1")));
+                        }
+
+                        // Получаем ссылку на Spinner из макета
+                        Spinner spinner = ((Activity) context).findViewById(R.id.svaluta); // Замените на ваш реальный идентификатор
+                        Spinner spinner2 = ((Activity) context).findViewById(R.id.svaluta2);
+
+                        // Создаем ArrayAdapter и устанавливаем его в Spinner
+                        ArrayAdapter<String> adapter = new ArrayAdapter<>(context, android.R.layout.simple_spinner_item, global.valuts);
+                        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                        spinner.setAdapter(adapter);
+                        spinner2.setAdapter(adapter);
+
+
+
+                    }catch (Exception e) {
+
+                    }
                 }
-
-
 
             } catch (JSONException e) {
                 e.printStackTrace();
                 Toast.makeText(MainActivity.this,"Ошибка загрузки данных", Toast.LENGTH_SHORT).show();
             }
+
+            /*
+            if (result == null && 1 == 2) {
+                try{
+                    SharedPreferences valu = getSharedPreferences("valu", Context.MODE_PRIVATE);
+                    //SharedPreferences.Editor editor_valu = valu.edit();
+
+                    Map<String, ?> allEntries = valu.getAll();
+                    Set<String> keys = allEntries.keySet();
+                    for (String key : keys) {
+                        // Ваши действия с каждым ключом
+                        //Log.d("SharedPreferences", "Key: " + key + ", Value: " + allEntries.get(key));
+                        global.valuts.add(key);
+                    }
+                    for (int i = 1; i <= global.valuts.size()-1; i++) {
+                        global.valuts_price.add(Double.parseDouble(valu.getString(global.valuts.get(i),"1")));
+                    }
+
+                    // Получаем ссылку на Spinner из макета
+                    Spinner spinner = ((Activity) context).findViewById(R.id.svaluta); // Замените на ваш реальный идентификатор
+                    Spinner spinner2 = ((Activity) context).findViewById(R.id.svaluta2);
+
+                    // Создаем ArrayAdapter и устанавливаем его в Spinner
+                    ArrayAdapter<String> adapter = new ArrayAdapter<>(context, android.R.layout.simple_spinner_item, global.valuts);
+                    adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                    spinner.setAdapter(adapter);
+                    spinner2.setAdapter(adapter);
+
+
+
+                }catch (Exception e) {
+
+                }
+
+            }*/
         }
+        private boolean isNetworkAvailable() {
+            ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+            NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+            return activeNetwork != null && activeNetwork.isConnectedOrConnecting();
+        }
+
     }
 
 
