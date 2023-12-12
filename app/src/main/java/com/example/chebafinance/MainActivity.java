@@ -20,9 +20,12 @@ import android.widget.SimpleAdapter;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import androidx.appcompat.app.AppCompatActivity;
+
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -37,6 +40,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
 import javax.net.ssl.HttpsURLConnection;
 
 
@@ -154,6 +158,9 @@ public class MainActivity extends AppCompatActivity {
                 new int[]{android.R.id.text1, android.R.id.text2});
         listView.setAdapter(adapter);
 
+
+
+
         // кнопка плюс
         addButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -211,6 +218,21 @@ public class MainActivity extends AppCompatActivity {
                     editPrice.setText("");
                     editCount.setText("");
                     // RUB - но думаю тут пока не надо
+
+
+                    // сохранение для вылета
+                    SharedPreferences cashe = getSharedPreferences("cashe", Context.MODE_PRIVATE);
+                    SharedPreferences.Editor cashe_editor = cashe.edit();
+                    cashe_editor.clear(); // Очищаем все предыдущие значения
+                    for (int i = 0; i < names.size(); i++) {
+                        cashe_editor.putString(names.get(i), names.get(i));
+                        cashe_editor.putString(names.get(i)+"_P", Double.toString(price.get(i)));
+                        cashe_editor.putString(names.get(i)+"_C", Double.toString(count.get(i)));
+                        cashe_editor.putString(names.get(i)+"_V", valuta.get(i));
+                    }
+                    cashe_editor.apply(); // А это сохранение без него работать ничего не будет
+                    Toast.makeText(MainActivity.this,"Данные в кеш сохранены", Toast.LENGTH_SHORT).show();
+
 
 
 
@@ -275,6 +297,19 @@ public class MainActivity extends AppCompatActivity {
                 editCount.setText("");
                 // RUB - но думаю тут пока не надо
                 Toast.makeText(MainActivity.this,"запрос данных "+global.valuts_price, Toast.LENGTH_SHORT).show();
+
+                // сохранение для вылета
+                SharedPreferences cashe = getSharedPreferences("cashe", Context.MODE_PRIVATE);
+                SharedPreferences.Editor cashe_editor = cashe.edit();
+                cashe_editor.clear(); // Очищаем все предыдущие значения
+                for (int i = 0; i < names.size(); i++) {
+                    cashe_editor.putString(names.get(i), names.get(i));
+                    cashe_editor.putString(names.get(i)+"_P", Double.toString(price.get(i)));
+                    cashe_editor.putString(names.get(i)+"_C", Double.toString(count.get(i)));
+                    cashe_editor.putString(names.get(i)+"_V", valuta.get(i));
+                }
+                cashe_editor.apply(); // А это сохранение без него работать ничего не будет
+                Toast.makeText(MainActivity.this,"Данные в кеш сохранены", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -310,6 +345,46 @@ public class MainActivity extends AppCompatActivity {
                 imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
             }
         });
+
+
+        // загрузка кеша последнего вылета
+        SharedPreferences cashes = getSharedPreferences("cashe", Context.MODE_PRIVATE);
+        Map<String, ?> allEntries = cashes.getAll();
+        if (allEntries.isEmpty()) {
+            Log.d("SharedPreferences", "No entries found");
+        } else
+        {
+            Set<String> keys = allEntries.keySet();
+            for (String key : keys) {
+                if (!key.contains("_")){
+                    names.add(key);
+                }
+            }
+            for (int i = 0; i <= names.size()-1; i++) {
+                price.add(Double.parseDouble(cashes.getString(names.get(i)+"_P","1")));
+                count.add(Double.parseDouble(cashes.getString(names.get(i)+"_C","1")));
+                valuta.add(cashes.getString(names.get(i)+"_V","RUB"));
+            }
+            double sum = 0;
+            for (int i = 0; i < names.size(); i++) {
+                sum=sum+price.get(i)*count.get(i)*global.valuts_price.get(global.valuts.indexOf(valuta.get(i)));
+            }
+            global.resultat=sum;
+            if (sValuta2.getSelectedItem().toString()!="RUB"){
+                global.resultat=global.resultat/global.valuts_price.get(global.valuts.indexOf(sValuta2.getSelectedItem().toString()));
+            }
+            Formatter f =  new Formatter();
+            result.setText("Сумма "+f.format("%.2f%n", global.resultat));
+            data.clear();
+            HashMap<String, Object> map;
+            for (int i = 0; i < names.size(); i++) {
+                map = new HashMap<>();
+                map.put("Name", names.get(i));
+                map.put("Price", price.get(i) +" x "+ count.get(i) +" = "+ price.get(i) * count.get(i)+"  "+ valuta.get(i));
+                data.add(map);
+            }
+            adapter.notifyDataSetChanged();
+        } /*_*/
     }
 
     private class GetURLData extends AsyncTask<String, String, String> {
