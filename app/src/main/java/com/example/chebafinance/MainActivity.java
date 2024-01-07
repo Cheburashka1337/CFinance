@@ -2,11 +2,13 @@ package com.example.chebafinance;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.speech.RecognizerIntent;
 import android.text.InputType;
 import android.util.Log;
 import android.view.View;
@@ -38,6 +40,7 @@ import java.util.Formatter;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -51,12 +54,19 @@ public class MainActivity extends AppCompatActivity {
         public static ArrayList <Double> valuts_price = new ArrayList();
         public static Double resultat = 0.0;
     }
-
-
-    //private Spinner svaluta;
+    //private static final int REQUEST_IMAGE_CAPTURE = 1;
+    //private static final int REQUEST_IMAGE_PICK = 2;
+    //private OCRAsyncTask ocrAsyncTask;
+    //private EditText editPrice;
+    //private static final int REQUEST_IMAGE_CAPTURE = 1;
+    // private static final int REQUEST_PERMISSION_CODE = 2;
+    // private ImageView imageView;
+    // private EditText editPrice;
+    //private static final int REQUEST_IMAGE_CAPTURE = 1;
+    //private EditText editPrice;
+    private static final int SPEECH_REQUEST_CODE = 123;
     private Set<Currency> mAvailableCurrenciesSet;
     private List<Currency> mAvailableCurrenciesList;
-    //private ArrayAdapter<Currency> mAdapter;
 
 
     @Override
@@ -74,28 +84,29 @@ public class MainActivity extends AppCompatActivity {
         Spinner sValuta2 = (Spinner) findViewById(R.id.svaluta2);
         ListView listView = findViewById(R.id.listView);
 
-        ArrayList <String> names = new ArrayList();
-        ArrayList <Double> price = new ArrayList();
-        ArrayList <Double> count = new ArrayList();
-        ArrayList <String> valuta = new ArrayList();
+        //ArrayList <String> names = new ArrayList();
+        //ArrayList <Double> price = new ArrayList();
+        //ArrayList <Double> count = new ArrayList();
+        //ArrayList <String> valuta = new ArrayList();
+        ArrayList<String> names = new ArrayList<>();
+        ArrayList<Double> price = new ArrayList<>();
+        ArrayList<Double> count = new ArrayList<>();
+        ArrayList<String> valuta = new ArrayList<>();
 
-        // наши валюты
+
+        // приоритетные валюты
         global.valuts.add("RUB");
         global.valuts_price.add(1.0);
         global.valuts.add("EUR");
         global.valuts.add("KZT");
         global.valuts.add("USD");
         global.valuts.add("BYN");
+        global.valuts.add("CNY");
 
-
-        //result.setEnabled(false);
-        //result.setCursorVisible(false);
-        //result.setKeyListener(null);
         //Toast.makeText(MainActivity.this,"опа", Toast.LENGTH_SHORT).show();
         result.setInputType(InputType.TYPE_NULL);
 
         String vurl = "https://www.cbr-xml-daily.ru/daily_json.js";
-        //new GetURLData().execute(vurl);
         try{
             new GetURLData(MainActivity.this).execute(vurl);
         } catch (Exception e) {
@@ -104,62 +115,14 @@ public class MainActivity extends AppCompatActivity {
         mAvailableCurrenciesSet = Currency.getAvailableCurrencies();
         mAvailableCurrenciesList = new ArrayList<Currency>(mAvailableCurrenciesSet);
 
-        //Toast.makeText(MainActivity.this," "+mAvailableCurrenciesList, Toast.LENGTH_LONG).show();
-
-        /*mAdapter = new ArrayAdapter<Currency>(this,
-                android.R.layout.simple_spinner_item, mAvailableCurrenciesList);
-        mAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        sValuta.setAdapter(mAdapter);*/
-
-
-        /*HashMap<String, Object> map;
-        for (int i = 0; i < names.size(); i++) {
-            map = new HashMap<>();
-            map.put("Name", names.get(i));
-            map.put("Price", price.get(i) +" x "+ count.get(i) +" = "+ price.get(i) * count.get(i) +"  "+ valuta.get(i));
-            data.add(map);
-        }*/
-/*
-        SharedPreferences preferences = getSharedPreferences("my_preferences_test1", Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = preferences.edit();
-        editor.putString("key", "value");
-        editor.putInt("integerKey", 42);
-        editor.apply(); // Применение изменений
-        String value = preferences.getString("key", "default_value");
-        int intValue = preferences.getInt("integerKey", 0);
-        Toast.makeText(MainActivity.this," Данные успешно добавлены "+value+"_"+intValue, Toast.LENGTH_SHORT).show();
-        editor.clear();
-        editor.apply();
-        value = preferences.getString("key", "default_value");
-        intValue = preferences.getInt("integerKey", 0);
-        Toast.makeText(MainActivity.this," Данные успешно добавлены "+value+"_"+intValue, Toast.LENGTH_SHORT).show();
-
-
-
-        SharedPreferences preferences2 = getSharedPreferences("my_preferences_test2", Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor2 = preferences2.edit();
-        editor2.putString("key", "RUB");
-        editor2.putInt("integerKey", 1);
-        editor2.apply(); // Применение изменений
-        String value2 = preferences2.getString("key", "default_value");
-        int intValue2 = preferences2.getInt("integerKey", 0);
-        Toast.makeText(MainActivity.this," Данные успешно добавлены "+value2+"_"+intValue2, Toast.LENGTH_SHORT).show();
-
-}*/
-
-
 
         // Массив имен атрибутов, из которых будут читаться данные
         String[] from = {"Name", "Price"};
-
         ArrayList<HashMap<String, Object>> data = new ArrayList();
         SimpleAdapter adapter = new SimpleAdapter(this, data, android.R.layout.simple_list_item_2,
                 from,
                 new int[]{android.R.id.text1, android.R.id.text2});
         listView.setAdapter(adapter);
-
-
-
 
         // кнопка плюс
         addButton.setOnClickListener(new View.OnClickListener() {
@@ -175,11 +138,7 @@ public class MainActivity extends AppCompatActivity {
                         } else { count.add(1.0); }
                         //valuta.add("RUB"); // !
                         valuta.add(global.valuts.get(sValuta.getSelectedItemPosition()));
-                        Toast.makeText(MainActivity.this,""+sValuta.getSelectedItem().toString(), Toast.LENGTH_SHORT).show();
-                        //Toast.makeText(MainActivity.this,""+sValuta.getSelectedItemPosition(), Toast.LENGTH_SHORT).show();
-                        //String b = String.valueOf(R.array.theValute);
-                        //Toast.makeText(MainActivity.this,""+b, Toast.LENGTH_SHORT).show();
-                        Toast.makeText(MainActivity.this," Данные успешно добавлены ", Toast.LENGTH_SHORT).show();
+                        //Toast.makeText(MainActivity.this," Данные успешно добавлены ", Toast.LENGTH_SHORT).show();
                     } else {
                         int nameIndex = names.indexOf(editName.getText().toString());
                         names.set(nameIndex,editName.getText().toString());
@@ -231,17 +190,9 @@ public class MainActivity extends AppCompatActivity {
                         cashe_editor.putString(names.get(i)+"_V", valuta.get(i));
                     }
                     cashe_editor.apply(); // А это сохранение без него работать ничего не будет
-                    Toast.makeText(MainActivity.this,"Данные в кеш сохранены", Toast.LENGTH_SHORT).show();
-
-
-
-
-
-
+                    //Toast.makeText(MainActivity.this,"Данные в кеш сохранены", Toast.LENGTH_SHORT).show();
                 }
                 else { Toast.makeText(MainActivity.this," Заполните обязательные поля ", Toast.LENGTH_SHORT).show(); }
-
-
             }
 
         });
@@ -259,58 +210,78 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+
         // кнопка минус
         delButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (!editName.getText().toString().trim().equals("")){
-                    int deathIndex = names.indexOf(editName.getText().toString());
-                    names.remove(deathIndex);
-                    price.remove(deathIndex);
-                    count.remove(deathIndex);
-                    valuta.remove(deathIndex);
-                    Toast.makeText(MainActivity.this," Данные успешно удалены ", Toast.LENGTH_SHORT).show();
-                    data.clear();
-                    HashMap<String, Object> map;
-                    for (int i = 0; i < names.size(); i++) {
-                        map = new HashMap<>();
-                        map.put("Name", names.get(i));
-                        map.put("Price", price.get(i) +" x "+ count.get(i) +" = "+ price.get(i) * count.get(i) +"  "+ valuta.get(i));
-                        data.add(map);
+                try{
+                    if (!editName.getText().toString().trim().equals("")){
+                        int deathIndex = names.indexOf(editName.getText().toString());
+                        names.remove(deathIndex);
+                        price.remove(deathIndex);
+                        count.remove(deathIndex);
+                        valuta.remove(deathIndex);
+                        Toast.makeText(MainActivity.this," Данные успешно удалены ", Toast.LENGTH_SHORT).show();
+                        data.clear();
+                        HashMap<String, Object> map;
+                        for (int i = 0; i < names.size(); i++) {
+                            map = new HashMap<>();
+                            map.put("Name", names.get(i));
+                            map.put("Price", price.get(i) +" x "+ count.get(i) +" = "+ price.get(i) * count.get(i) +"  "+ valuta.get(i));
+                            data.add(map);
+                        }
+                        adapter.notifyDataSetChanged();
+
                     }
-                    adapter.notifyDataSetChanged();
+                    double sum = 0;
+                    for (int i = 0; i < names.size(); i++) {
+                        sum=sum+price.get(i)*count.get(i)*global.valuts_price.get(global.valuts.indexOf(valuta.get(i)));
+                    }
+                    global.resultat=sum;
+                    if (sValuta2.getSelectedItem().toString()!="RUB"){
+                        global.resultat=global.resultat/global.valuts_price.get(global.valuts.indexOf(sValuta2.getSelectedItem().toString()));
+                    }
+                    Formatter f =  new Formatter();
+                    result.setText("Сумма "+f.format("%.2f%n", global.resultat));
 
-                }
-                double sum = 0;
-                for (int i = 0; i < names.size(); i++) {
-                    sum=sum+price.get(i)*count.get(i)*global.valuts_price.get(global.valuts.indexOf(valuta.get(i)));
-                }
-                global.resultat=sum;
-                if (sValuta2.getSelectedItem().toString()!="RUB"){
-                    global.resultat=global.resultat/global.valuts_price.get(global.valuts.indexOf(sValuta2.getSelectedItem().toString()));
-                }
-                Formatter f =  new Formatter();
-                result.setText("Сумма "+f.format("%.2f%n", global.resultat));
+                    editName.setText("");
+                    editPrice.setText("");
+                    editCount.setText("");
+                    // RUB - но думаю тут пока не надо
+                    //Toast.makeText(MainActivity.this,"запрос данных "+global.valuts_price, Toast.LENGTH_SHORT).show();
 
-                editName.setText("");
-                editPrice.setText("");
-                editCount.setText("");
-                // RUB - но думаю тут пока не надо
-                Toast.makeText(MainActivity.this,"запрос данных "+global.valuts_price, Toast.LENGTH_SHORT).show();
-
-                // сохранение для вылета
-                SharedPreferences cashe = getSharedPreferences("cashe", Context.MODE_PRIVATE);
-                SharedPreferences.Editor cashe_editor = cashe.edit();
-                cashe_editor.clear(); // Очищаем все предыдущие значения
-                for (int i = 0; i < names.size(); i++) {
-                    cashe_editor.putString(names.get(i), names.get(i));
-                    cashe_editor.putString(names.get(i)+"_P", Double.toString(price.get(i)));
-                    cashe_editor.putString(names.get(i)+"_C", Double.toString(count.get(i)));
-                    cashe_editor.putString(names.get(i)+"_V", valuta.get(i));
+                    // сохранение для вылета
+                    SharedPreferences cashe = getSharedPreferences("cashe", Context.MODE_PRIVATE);
+                    SharedPreferences.Editor cashe_editor = cashe.edit();
+                    cashe_editor.clear(); // Очищаем все предыдущие значения
+                    for (int i = 0; i < names.size(); i++) {
+                        cashe_editor.putString(names.get(i), names.get(i));
+                        cashe_editor.putString(names.get(i)+"_P", Double.toString(price.get(i)));
+                        cashe_editor.putString(names.get(i)+"_C", Double.toString(count.get(i)));
+                        cashe_editor.putString(names.get(i)+"_V", valuta.get(i));
+                    }
+                    cashe_editor.apply(); // А это сохранение без него работать ничего не будет
+                    //Toast.makeText(MainActivity.this,"Данные в кеш сохранены", Toast.LENGTH_SHORT).show();
+                }catch (Exception e){
+                    editName.setText("");
+                    editPrice.setText("");
+                    editCount.setText("");
                 }
-                cashe_editor.apply(); // А это сохранение без него работать ничего не будет
-                Toast.makeText(MainActivity.this,"Данные в кеш сохранены", Toast.LENGTH_SHORT).show();
             }
+        });
+        //долгое удержание на удалении для стирания всего
+        delButton.setOnLongClickListener(view -> {
+            editName.setText("");
+            editPrice.setText("");
+            editCount.setText("");
+            SharedPreferences cashe = getSharedPreferences("cashe", Context.MODE_PRIVATE);
+            SharedPreferences.Editor cashe_editor = cashe.edit();
+            cashe_editor.clear();
+            cashe_editor.apply();
+            data.clear();
+            adapter.notifyDataSetChanged();
+            return true;
         });
 
         // выбор итоговой валюты
@@ -340,13 +311,13 @@ public class MainActivity extends AppCompatActivity {
         result.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
                 InputMethodManager imm = (InputMethodManager) getSystemService(Activity.INPUT_METHOD_SERVICE);
                 imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
             }
         });
 
-
+       // synchronized (this) {
+       // try { Thread.sleep(300); } catch (InterruptedException e) { throw new RuntimeException(e);}
         // загрузка кеша последнего вылета
         SharedPreferences cashes = getSharedPreferences("cashe", Context.MODE_PRIVATE);
         Map<String, ?> allEntries = cashes.getAll();
@@ -367,7 +338,10 @@ public class MainActivity extends AppCompatActivity {
             }
             double sum = 0;
             for (int i = 0; i < names.size(); i++) {
-                sum=sum+price.get(i)*count.get(i)*global.valuts_price.get(global.valuts.indexOf(valuta.get(i)));
+                try {
+                    sum=sum+price.get(i)*count.get(i)*global.valuts_price.get(global.valuts.indexOf(valuta.get(i)));
+                } catch (Exception e){ sum=sum+price.get(i)*count.get(i)*1; }
+                //sum=sum+price.get(i)*count.get(i)*global.valuts_price.get(global.valuts.indexOf(valuta.get(i)));
             }
             global.resultat=sum;
             if (sValuta2.getSelectedItem().toString()!="RUB"){
@@ -385,6 +359,44 @@ public class MainActivity extends AppCompatActivity {
             }
             adapter.notifyDataSetChanged();
         } /*_*/
+
+
+
+        editName.setOnLongClickListener(view -> {
+            startVoiceInput();
+            return true; // Возвращаем true, чтобы событие было обработано полностью
+        });
+
+
+    }
+
+    private void startVoiceInput() {
+        Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault());
+
+        try {
+            startActivityForResult(intent, SPEECH_REQUEST_CODE);
+        } catch (Exception e) {
+            Toast.makeText(this, "Голосовой ввод не поддерживается на вашем устройстве", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == SPEECH_REQUEST_CODE && resultCode == RESULT_OK) {
+            ArrayList<String> result = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
+            String spokenText = result.get(0);
+
+            // Делайте что-то с полученным текстом (например, установите его в EditText)
+            //EditText editName = findViewById(R.id.editName);
+            EditText editName = (EditText) findViewById(R.id.edit_name);
+            editName.setText(spokenText.toString());
+
+            Toast.makeText(this, "Вы сказали: " + spokenText, Toast.LENGTH_SHORT).show();
+        }
     }
 
     private class GetURLData extends AsyncTask<String, String, String> {
@@ -394,7 +406,7 @@ public class MainActivity extends AppCompatActivity {
         }
         protected void onPreExecute(){
             super.onPreExecute();
-            Toast.makeText(MainActivity.this,"запрос данных", Toast.LENGTH_SHORT).show();
+            //Toast.makeText(MainActivity.this,"запрос данных", Toast.LENGTH_SHORT).show();
         }
 
         @Override
@@ -438,12 +450,6 @@ public class MainActivity extends AppCompatActivity {
             super.onPostExecute(result);
             } catch(Exception e){}
 
-            //if (isNetworkAvailable()) { //тест проверки интернета // Интернет соединение есть, обрабатываем результат
-                //Toast.makeText(MainActivity.this, result, Toast.LENGTH_SHORT).show();
-            //} else { // Интернет соединение отсутствует, выполните соответствующие действия
-                // Toast.makeText(MainActivity.this, "Отсутствует подключение к интернету", Toast.LENGTH_SHORT).show();
-            //}
-
             try{
 
                 if (result != null && isNetworkAvailable()==true) {
@@ -457,7 +463,7 @@ public class MainActivity extends AppCompatActivity {
                 }
 
                 // Получаем ссылку на Spinner из макета
-                Spinner spinner = ((Activity) context).findViewById(R.id.svaluta); // Замените на ваш реальный идентификатор
+                Spinner spinner = ((Activity) context).findViewById(R.id.svaluta);
                 Spinner spinner2 = ((Activity) context).findViewById(R.id.svaluta2);
 
                 // Создаем ArrayAdapter и устанавливаем его в Spinner
@@ -470,7 +476,7 @@ public class MainActivity extends AppCompatActivity {
 
             } catch (JSONException e) {
                 e.printStackTrace();
-                Toast.makeText(MainActivity.this,"Ошибка загрузки данных 2", Toast.LENGTH_SHORT).show();
+                //Toast.makeText(MainActivity.this,"Ошибка загрузки данных 2", Toast.LENGTH_SHORT).show();
             } catch(Exception e){}
 
 
@@ -485,7 +491,7 @@ public class MainActivity extends AppCompatActivity {
                     subObj2 = subObj.getJSONObject(global.valuts.get(i));
                     global.valuts_price.add(subObj2.getDouble("Value")/subObj2.getDouble("Nominal"));
                 }
-                Toast.makeText(MainActivity.this,"Данные по валютному курсу были загружены", Toast.LENGTH_SHORT).show();
+                //Toast.makeText(MainActivity.this,"Данные по валютному курсу были загружены", Toast.LENGTH_SHORT).show();
 
 
                 SharedPreferences valu = getSharedPreferences("valu", Context.MODE_PRIVATE);
@@ -495,7 +501,8 @@ public class MainActivity extends AppCompatActivity {
                     editor_valu.putString(global.valuts.get(i), Double.toString(global.valuts_price.get(i)));
                 }
                 editor_valu.apply(); // А это сохранение без него работать ничего не будет
-                Toast.makeText(MainActivity.this,"Данные по валютному курсу сохранены", Toast.LENGTH_SHORT).show();
+                //editor_valu.commit();
+                //Toast.makeText(MainActivity.this,"Данные по валютному курсу сохранены", Toast.LENGTH_SHORT).show();
 
 
                 } else if (result == null && isNetworkAvailable()==false) {
@@ -529,7 +536,7 @@ public class MainActivity extends AppCompatActivity {
 
             } catch (JSONException e) {
                 e.printStackTrace();
-                Toast.makeText(MainActivity.this,"Ошибка загрузки данных", Toast.LENGTH_SHORT).show();
+                //Toast.makeText(MainActivity.this,"Ошибка загрузки данных", Toast.LENGTH_SHORT).show();
             }
 
         }
@@ -539,4 +546,5 @@ public class MainActivity extends AppCompatActivity {
             return activeNetwork != null && activeNetwork.isConnectedOrConnecting();
         }
     }
+
 }
